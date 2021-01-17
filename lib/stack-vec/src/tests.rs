@@ -172,13 +172,13 @@ fn iterator() {
     }
 
     let mut i = 0;
-    for val in &stack_vec {
+    for val in (&stack_vec).into_iter() {
         assert_eq!(*val, i * i);
         i += 1;
     }
 
     let mut i = 0;
-    for val in stack_vec {
+    for val in stack_vec.into_iter() {
         assert_eq!(*val, i * i);
         i += 1;
     }
