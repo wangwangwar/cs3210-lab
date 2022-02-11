@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 
 function cleanup_and_exit() {
   kill $!

@@ -11,7 +11,6 @@ authors = [
 edition = "2018"
 
 [dependencies]
-structopt = "0.1.0"
-structopt-derive = "0.1.0"
-serial = "0.4"
+structopt = "0.3.26"
+serial = "0.4.0"
 xmodem = { path = "../xmodem/" }

@@ -1,4 +1,4 @@
-use serial::core::{CharSize, BaudRate, StopBits, FlowControl};
+use serial::{CharSize, BaudRate, StopBits, FlowControl};
 
 pub fn parse_width(s: &str) -> Result<CharSize, &str> {
     match s {
