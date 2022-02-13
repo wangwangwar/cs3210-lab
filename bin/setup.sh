@@ -5,7 +5,7 @@ set -e
 TOP=$(git rev-parse --show-toplevel)
 BIN=$TOP/bin
 DEP=$TOP/.dep
-VER=nightly-2019-07-01
+VER=nightly
 PROJ_PKG=(build-essential
      python3
      socat
@@ -45,9 +45,9 @@ pushd $DEP
 if ! [ -e cargo-xbuild ]; then
   git clone https://github.com/rust-osdev/cargo-xbuild
   pushd cargo-xbuild
-  git checkout v0.5.20
+  git checkout v0.6.5
   # https://github.com/rust-osdev/cargo-xbuild/pull/75
-  git cherry-pick b24c849028eb7da2375288b1b8ab6a7538162bd7
+  #git cherry-pick b24c849028eb7da2375288b1b8ab6a7538162bd7
   popd
 fi
 cargo install -f --path cargo-xbuild --locked
