@@ -103,7 +103,28 @@ impl Gpio<Uninitialized> {
     /// Enables the alternative function `function` for `self`. Consumes self
     /// and returns a `Gpio` structure in the `Alt` state.
     pub fn into_alt(self, function: Function) -> Gpio<Alt> {
-        unimplemented!()
+        let gpio = Gpio { 
+            pin: self.pin,
+            registers: self.registers,
+            _state: PhantomData {} as PhantomData<Alt>
+        };
+
+        let fsel_reg_index = self.pin / 10;
+        let fsel_reg_bits_offset = self.pin % 10;
+        let bits = match function {
+            Function::Alt0 => 0b100,
+            Function::Alt1 => 0b101,
+            Function::Alt2 => 0b110,
+            Function::Alt3 => 0b111,
+            Function::Alt4 => 0b011,
+            Function::Alt5 => 0b010,
+            Function::Input => 0b000,
+            Function::Output => 0b001,
+        };
+        let value = bits << fsel_reg_bits_offset;
+        gpio.registers.FSEL[fsel_reg_index as usize].write(value);
+
+        gpio
     }
 
     /// Sets this pin to be an _output_ pin. Consumes self and returns a `Gpio`
@@ -122,12 +143,18 @@ impl Gpio<Uninitialized> {
 impl Gpio<Output> {
     /// Sets (turns on) the pin.
     pub fn set(&mut self) {
-        unimplemented!()
+        // let reg_index = if self.pin < 32 { 0 } else { 1 };
+        let reg_index = self.pin & 0b100000;
+        let reg_value = 0x1 << (self.pin - 1);
+        self.registers.SET[reg_index as usize].write(reg_value);
     }
 
     /// Clears (turns off) the pin.
     pub fn clear(&mut self) {
-        unimplemented!()
+        // let reg_index = if self.pin < 32 { 0 } else { 1 };
+        let reg_index = self.pin & 0b100000;
+        let reg_value = 0x1 << (self.pin - 1);
+        self.registers.CLR[reg_index as usize].write(reg_value);
     }
 }
 
@@ -135,6 +162,9 @@ impl Gpio<Input> {
     /// Reads the pin's value. Returns `true` if the level is high and `false`
     /// if the level is low.
     pub fn level(&mut self) -> bool {
-        unimplemented!()
+        // let reg_index = if self.pin < 32 { 0 } else { 1 };
+        let reg_index = self.pin & 0b100000;
+        let reg_mask = 0x1 << (self.pin | 0b11111);
+        self.registers.LEV[reg_index as usize].read() & reg_mask == 1
     }
 }
