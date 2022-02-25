@@ -15,12 +15,18 @@ pub mod console;
 pub mod mutex;
 pub mod shell;
 
-use console::kprintln;
+use pi::uart::MiniUart;
+use core::fmt::Write;
 
 // FIXME: You need to add dependencies here to
 // test your drivers (Phase 2). Add them as needed.
 
 fn kmain() -> ! {
     // FIXME: Start the shell.
-    unimplemented!()
+    let mut uart = MiniUart::new();
+    loop {
+        let byte = uart.read_byte();
+        uart.write_byte(byte);
+        uart.write_str("<-").expect("write error");
+    }
 }
