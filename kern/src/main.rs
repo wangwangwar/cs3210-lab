@@ -15,6 +15,7 @@ pub mod console;
 pub mod mutex;
 pub mod shell;
 
+use console::{Console, CONSOLE, kprintln};
 use pi::uart::MiniUart;
 use core::fmt::Write;
 
@@ -26,7 +27,8 @@ fn kmain() -> ! {
     let mut uart = MiniUart::new();
     loop {
         let byte = uart.read_byte();
-        uart.write_byte(byte);
-        uart.write_str("<-").expect("write error");
+        //uart.write_byte(byte);
+        //uart.write_str("<-").expect("write error");
+        kprintln!("write {}", byte as char);
     }
 }

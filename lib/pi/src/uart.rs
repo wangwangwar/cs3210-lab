@@ -159,6 +159,7 @@ impl fmt::Write for MiniUart {
 mod uart_io {
     use super::io;
     use super::MiniUart;
+    use shim::io::ErrorKind;
     use volatile::prelude::*;
 
     // FIXME: Implement `io::Read` and `io::Write` for `MiniUart`.
@@ -173,17 +174,29 @@ mod uart_io {
 
     impl io::Read for MiniUart {
         fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
-            todo!()
+            if buf.len() == 0 {
+                return io::Result::Ok(0);
+            } else if self.wait_for_byte().is_err() {
+                return io::Result::Err(io::Error::from(ErrorKind::TimedOut));
+            } else {
+                for i in 0..buf.len() {
+                    buf[i] = self.read_byte();
+                }
+                return io::Result::Ok(buf.len());
+            }
         }
     }
 
     impl io::Write for MiniUart {
         fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-            todo!()
+            for byte in buf {
+                self.write_byte(*byte);
+            }
+            return io::Result::Ok(buf.len());
         }
 
         fn flush(&mut self) -> io::Result<()> {
-            todo!()
+            io::Result::Ok(())
         }
     }
 }
