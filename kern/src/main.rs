@@ -24,11 +24,5 @@ use core::fmt::Write;
 
 fn kmain() -> ! {
     // FIXME: Start the shell.
-    let mut uart = MiniUart::new();
-    loop {
-        let byte = uart.read_byte();
-        //uart.write_byte(byte);
-        //uart.write_str("<-").expect("write error");
-        kprintln!("write {}", byte as char);
-    }
+    shell::shell("> ")
 }
