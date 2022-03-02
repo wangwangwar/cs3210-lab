@@ -1,6 +1,3 @@
-#![feature(asm)]
-#![feature(global_asm)]
-
 #![cfg_attr(not(test), no_std)]
 #![cfg_attr(not(test), no_main)]
 
@@ -8,8 +5,8 @@
 mod init;
 
 use xmodem::Xmodem;
-use core::time::Duration;
-use pi;
+use pi::{self, uart::MiniUart};
+use core::arch::asm;
 
 /// Start address of the binary to load and of the bootloader.
 const BINARY_START_ADDR: usize = 0x80000;
@@ -23,12 +20,24 @@ const MAX_BINARY_SIZE: usize = BOOTLOADER_START_ADDR - BINARY_START_ADDR;
 
 /// Branches to the address `addr` unconditionally.
 unsafe fn jump_to(addr: *mut u8) -> ! {
-    asm!("br $0" : : "r"(addr as usize));
+    asm!("br {0}", in(reg) (addr as usize));
     loop {
-        asm!("wfe" :::: "volatile")
+        asm!("wfe")
     }
 }
 
 fn kmain() -> ! {
     // FIXME: Implement the bootloader.
+    loop {
+        let mut uart = MiniUart::new();
+        let buffer = unsafe {
+            core::slice::from_raw_parts_mut(BINARY_START, MAX_BINARY_SIZE)
+        };
+        Xmodem::receive_with_progress(&mut uart, &mut buffer[..], |progress| {
+        }).expect("tty read error");
+
+        unsafe {
+            jump_to(BINARY_START);
+        }
+    }
 }
