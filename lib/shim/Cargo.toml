@@ -20,4 +20,4 @@ hashbrown = "0.6.3"
 
 [features]
 no_std = ["core2"]
-alloc = ["core2/alloc", "core2/collections"]
+alloc = ["core2/alloc"]
