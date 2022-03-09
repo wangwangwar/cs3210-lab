@@ -1,17 +1,7 @@
 use core::str;
-use shim::io;
-use shim::path::{Path, PathBuf};
-
 use stack_vec::StackVec;
 
-use pi::atags::Atags;
-
-use fat32::traits::FileSystem;
-use fat32::traits::{Dir, Entry};
-
 use crate::console::{kprint, kprintln, CONSOLE};
-use crate::ALLOCATOR;
-use crate::FILESYSTEM;
 
 // Accept commands at most 512 bytes in length 
 const MAX_BYTES_PER_COMMAND: usize = 512;
@@ -59,7 +49,7 @@ impl<'a> Command<'a> {
 }
 
 /// Starts a shell using `prefix` as the prefix for each line. This function
-/// never returns.
+/// returns if the `exit` command is called.
 pub fn shell(prefix: &str) -> ! {
     loop {
         kprint!("{}", prefix);
@@ -75,7 +65,7 @@ pub fn shell(prefix: &str) -> ! {
     }
 }
 
-fn get_cmd_str<'a> (buf: &'a mut [u8; MAX_BYTES]) -> &'a str {
+fn get_cmd_str<'a> (buf: &'a mut [u8; MAX_BYTES_PER_COMMAND]) -> &'a str {
     let mut i = 0;
     loop {
         match CONSOLE.lock().read_byte() {
