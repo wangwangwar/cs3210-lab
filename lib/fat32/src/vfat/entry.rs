@@ -11,6 +11,6 @@ pub enum Entry<HANDLE: VFatHandle> {
 
 // TODO: Implement any useful helper methods on `Entry`.
 
-impl<HANDLE: VFatHandle> traits::Entry for Entry<HANDLE> {
-    // FIXME: Implement `traits::Entry` for `Entry`.
-}
+//impl<HANDLE: VFatHandle> traits::Entry for Entry<HANDLE> {
+//    // FIXME: Implement `traits::Entry` for `Entry`.
+//}

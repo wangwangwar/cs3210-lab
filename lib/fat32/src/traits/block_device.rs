@@ -91,7 +91,7 @@ macro impl_for_read_write_seek($(<$($gen:tt),*>)* $T:path) {
 }
 
 impl_for_read_write_seek!(<'a> shim::io::Cursor<&'a mut [u8]>);
-impl_for_read_write_seek!(shim::io::Cursor<Vec<u8>>);
-impl_for_read_write_seek!(shim::io::Cursor<Box<[u8]>>);
+//impl_for_read_write_seek!(shim::io::Cursor<Vec<u8>>);
+//impl_for_read_write_seek!(shim::io::Cursor<Box<[u8]>>);
 #[cfg(test)]
 impl_for_read_write_seek!(::std::fs::File);
