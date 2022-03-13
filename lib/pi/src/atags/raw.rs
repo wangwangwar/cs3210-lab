@@ -20,7 +20,15 @@ impl Atag {
 
     /// FIXME: Returns the ATAG following `self`, if there is one.
     pub fn next(&self) -> Option<&Atag> {
-        unimplemented!()
+        match self.tag {
+            Self::NONE => None,
+            _ => unsafe {
+                let self_addr = self as *const Self as *const u32;
+                let next_addr = self_addr.add(self.dwords as usize);
+                let next_atag_pointer = next_addr as *const Self;
+                Option::Some(&*next_atag_pointer)
+            }
+        }
     }
 }
 

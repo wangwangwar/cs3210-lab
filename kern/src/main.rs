@@ -3,13 +3,11 @@
 //#![feature(const_fn)]
 #![feature(decl_macro)]
 #![feature(auto_traits)]
-#![feature(asm)]
-#![feature(global_asm)]
-#![feature(optin_builtin_traits)]
 #![feature(raw_vec_internals)]
 #![cfg_attr(not(test), no_std)]
 #![cfg_attr(not(test), no_main)]
 #![feature(negative_impls)]
+#![feature(panic_info_message)]
 
 #[cfg(not(test))]
 mod init;
@@ -25,6 +23,7 @@ pub mod shell;
 use console::{Console, CONSOLE, kprintln};
 use pi::uart::MiniUart;
 use core::fmt::Write;
+use pi::atags::Atags;
 
 use allocator::Allocator;
 use fs::FileSystem;
@@ -34,6 +33,10 @@ pub static ALLOCATOR: Allocator = Allocator::uninitialized();
 pub static FILESYSTEM: FileSystem = FileSystem::uninitialized();
 
 fn kmain() -> ! {
+    for atag in Atags::get() {
+        kprintln!("{:#?}", atag);
+    }
+
     unsafe {
         ALLOCATOR.initialize();
         FILESYSTEM.initialize();
