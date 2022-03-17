@@ -21,6 +21,7 @@ pub mod fs;
 pub mod mutex;
 pub mod shell;
 
+use alloc::string::String;
 use console::{Console, CONSOLE, kprintln};
 use pi::uart::MiniUart;
 use core::fmt::Write;
@@ -43,6 +44,6 @@ fn kmain() -> ! {
         FILESYSTEM.initialize();
     }
 
-    kprintln!("Welcome to cs3210!");
+    kprintln!("Welcome to {}!", String::from("cs3210"));
     shell::shell("> ");
 }

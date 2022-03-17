@@ -14,7 +14,8 @@ use core::fmt;
 
 use crate::console::kprintln;
 use crate::mutex::Mutex;
-use pi::atags::{Atag, Atags};
+use pi::atags::{Atag, Atags, Mem};
+use crate::allocator::util::{align_down, align_up};
 
 /// `LocalAlloc` is an analogous trait to the standard library's `GlobalAlloc`,
 /// but it takes `&mut self` in `alloc()` and `dealloc()`.
@@ -78,7 +79,20 @@ pub fn memory_map() -> Option<(usize, usize)> {
     let page_size = 1 << 12;
     let binary_end = unsafe { (&__text_end as *const u8) as usize };
 
-    unimplemented!("memory map")
+    get_atag_mem().map(|mem|
+        (align_up(binary_end, page_size),
+         align_down((mem.start + mem.size) as usize, page_size))
+    )
+}
+
+fn get_atag_mem() -> Option<Mem> {
+    for atag in Atags::get() {
+        match atag {
+            Atag::Mem(mem) => return Some(mem),
+            _ => continue
+        }
+    }
+    None
 }
 
 impl fmt::Debug for Allocator {
