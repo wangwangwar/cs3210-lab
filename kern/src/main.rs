@@ -1,4 +1,3 @@
-#![no_std]
 #![feature(alloc_error_handler)]
 //#![feature(const_fn)]
 #![feature(decl_macro)]
@@ -8,6 +7,8 @@
 #![cfg_attr(not(test), no_main)]
 #![feature(negative_impls)]
 #![feature(panic_info_message)]
+#![feature(int_roundings)]
+#![feature(core_panic)]
 
 #[cfg(not(test))]
 mod init;
