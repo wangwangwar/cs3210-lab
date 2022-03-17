@@ -52,4 +52,4 @@ install: build
 	@$(ROOT)/bin/install-kernel.py build/$(KERN).elf
 
 test:
-	cargo test --target=$(shell $(ROOT)/bin/get-host-target.sh)
+	cargo test --target=x86_64-unknown-linux-gnu
