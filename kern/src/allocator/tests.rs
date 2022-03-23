@@ -71,12 +71,101 @@ mod align_util {
 }
 
 mod allocator {
-    extern crate alloc;
-    use alloc::raw_vec::RawVec;
-
-    use core::alloc::Layout;
-
     use crate::allocator::{bin, bump, LocalAlloc};
+
+    use std::alloc::{self, Layout};
+    use std::alloc::handle_alloc_error;
+    use std::marker::PhantomData;
+    use std::mem;
+    use std::ops::{Deref, DerefMut};
+    use std::ptr::{self, NonNull, Unique};
+    use std::collections::TryReserveError;
+    use std::collections::TryReserveErrorKind::*;
+
+    pub struct RawVec<T> {
+        ptr: NonNull<T>,
+        cap: usize,
+        _marker: PhantomData<T>,
+    }
+
+    unsafe impl<T: Send> Send for RawVec<T> {}
+    unsafe impl<T: Sync> Sync for RawVec<T> {}
+
+    impl<T> RawVec<T> {
+        fn new() -> Self {
+            assert!(mem::size_of::<T>() != 0, "TODO: implement ZST support");
+            RawVec {
+                ptr: NonNull::dangling(),
+                cap: 0,
+                _marker: PhantomData,
+            }
+        }
+
+        fn with_capacity(capacity: usize) -> Self {
+            if mem::size_of::<T>() == 0 {
+                Self {
+                    ptr: NonNull::dangling(),
+                    cap: 0,
+                    _marker: PhantomData,
+                }
+            } else {
+                // We avoid `unwrap_or_else` here because it bloats the amount of
+                // LLVM IR generated.
+                let layout = match Layout::array::<T>(capacity) {
+                    Ok(layout) => layout,
+                    Err(_) => capacity_overflow(),
+                };
+                match alloc_guard(layout.size()) {
+                    Ok(_) => {}
+                    Err(_) => capacity_overflow(),
+                }
+                let ptr = unsafe { alloc::alloc(layout) };
+                let ptr2 = match NonNull::new(ptr as *mut T) {
+                    Some(ptr) => ptr,
+                    None => handle_alloc_error(layout),
+                };
+
+                // Allocators currently return a `NonNull<[u8]>` whose length
+                // matches the size requested. If that ever changes, the capacity
+                // here should change to `ptr.len() / mem::size_of::<T>()`.
+                Self {
+                    ptr: ptr2,
+                    cap: capacity,
+                    _marker: PhantomData
+                }
+            }
+        }
+
+        #[inline]
+        pub fn ptr(&self) -> *mut T {
+            self.ptr.as_ptr()
+        }
+    }
+
+    impl<T> Drop for RawVec<T> {
+        fn drop(&mut self) {
+            if self.cap != 0 {
+                let layout = Layout::array::<T>(self.cap).unwrap();
+                unsafe {
+                    alloc::dealloc(self.ptr.as_ptr() as *mut u8, layout);
+                }
+            }
+        }
+    }
+
+    #[inline]
+    fn alloc_guard(alloc_size: usize) -> Result<(), TryReserveError> {
+        if usize::BITS < 64 && alloc_size > isize::MAX as usize {
+            Err(CapacityOverflow.into())
+        } else {
+            Ok(())
+        }
+    }
+
+    #[cfg(not(no_global_oom_handling))]
+    fn capacity_overflow() -> ! {
+        panic!("capacity overflow");
+    }
 
     macro_rules! test_allocators {
         (@$kind:ident, $name:ident, $mem:expr, |$info:pat| $block:expr) => {

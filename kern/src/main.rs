@@ -1,14 +1,16 @@
+#![cfg_attr(not(test), no_std)]
+#![cfg_attr(not(test), no_main)]
 #![feature(alloc_error_handler)]
 //#![feature(const_fn)]
 #![feature(decl_macro)]
 #![feature(auto_traits)]
 #![feature(raw_vec_internals)]
-#![cfg_attr(not(test), no_std)]
-#![cfg_attr(not(test), no_main)]
 #![feature(negative_impls)]
 #![feature(panic_info_message)]
 #![feature(int_roundings)]
 #![feature(core_panic)]
+#![feature(ptr_internals)]
+#![feature(try_reserve_kind)]
 
 #[cfg(not(test))]
 mod init;
