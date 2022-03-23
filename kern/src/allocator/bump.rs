@@ -7,8 +7,10 @@ use crate::allocator::LocalAlloc;
 /// A "bump" allocator: allocates memory by bumping a pointer; never frees.
 #[derive(Debug)]
 pub struct Allocator {
-    current: usize,
+    start: usize,
     end: usize,
+    current: usize,
+    allocations: usize,
 }
 
 impl Allocator {
@@ -16,7 +18,12 @@ impl Allocator {
     /// starting at address `start` and ending at address `end`.
     #[allow(dead_code)]
     pub fn new(start: usize, end: usize) -> Allocator {
-        unimplemented!("bump allocator")
+        Allocator {
+            start,
+            end,
+            current: start,
+            allocations: 0,
+        }
     }
 }
 
@@ -43,7 +50,13 @@ impl LocalAlloc for Allocator {
     /// or `layout` does not meet this allocator's
     /// size or alignment constraints.
     unsafe fn alloc(&mut self, layout: Layout) -> *mut u8 {
-        unimplemented!("bump allocator")
+        let ptr = align_up(self.current, layout.align());
+        if ptr + layout.size() > self.end {
+            return ptr::null_mut();
+        }
+        self.current = ptr.saturating_add(layout.size());
+        self.allocations += 1;
+        ptr as *mut u8
     }
 
     /// Deallocates the memory referenced by `ptr`.
@@ -60,6 +73,9 @@ impl LocalAlloc for Allocator {
     /// Parameters not meeting these conditions may result in undefined
     /// behavior.
     unsafe fn dealloc(&mut self, _ptr: *mut u8, _layout: Layout) {
-        // LEAKED
+        self.allocations -= 1;
+        if self.allocations == 0 {
+            self.current = self.start;
+        }
     }
 }
