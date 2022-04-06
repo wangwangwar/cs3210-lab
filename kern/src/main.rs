@@ -11,6 +11,7 @@
 #![feature(core_panic)]
 #![feature(ptr_internals)]
 #![feature(try_reserve_kind)]
+#![feature(int_log)]
 
 #[cfg(not(test))]
 mod init;
